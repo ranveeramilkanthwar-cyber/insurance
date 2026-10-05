@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>InsureAI — Project Presentation</title>
+<style>
+/* ── Fonts & Reset ── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:#050b18;color:#f1f5f9;-webkit-font-smoothing:antialiased}
+
+/* ── Variables ── */
+:root{
+  --cyan:#06b6d4;--cyan-l:#22d3ee;--indigo:#6366f1;--purple:#a855f7;--green:#22c55e;--amber:#f59e0b;--red:#ef4444;
+  --bg1:#050b18;--bg2:#080f22;--card:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.08);--border-glow:rgba(6,182,212,0.35);
+  --t1:#f1f5f9;--t2:#94a3b8;--t3:#475569;
+}
+
+/* ── Slides Container ── */
+.deck{position:relative;width:100vw;height:100vh;overflow:hidden}
+.slide{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  opacity:0;transform:translateX(60px);transition:all 0.5s cubic-bezier(0.4,0,0.2,1);pointer-events:none;
+  padding:3rem;
+}
+.slide.active{opacity:1;transform:translateX(0);pointer-events:all}
+.slide.exit{opacity:0;transform:translateX(-60px)}
+
+/* ── Animated Background ── */
+.deck::before{
+  content:'';position:fixed;inset:0;z-index:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 10% 20%, rgba(6,182,212,0.08) 0%,transparent 70%),
+    radial-gradient(ellipse 60% 50% at 90% 80%, rgba(99,102,241,0.07) 0%,transparent 70%);
+  animation:bg 8s ease-in-out infinite alternate;
+}
+@keyframes bg{from{opacity:0.6}to{opacity:1}}
+
+/* ── Grid BG lines ── */
+.deck::after{
+  content:'';position:fixed;inset:0;z-index:0;
+  background-image:linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px);
+  background-size:60px 60px;
+}
+
+/* ── Slide inner ── */
+.slide-inner{position:relative;z-index:2;width:100%;max-width:1200px}
+
+/* ── Nav ── */
+.nav{
+  position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);z-index:100;
+  display:flex;align-items:center;gap:1rem;
+  background:rgba(8,15,34,0.8);backdrop-filter:blur(20px);border:1px solid var(--border);
+  border-radius:100px;padding:0.75rem 1.5rem;
+}
+.nav-btn{
+  width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:transparent;
+  color:var(--t2);cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;
+  transition:all 0.2s;
+}
+.nav-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.nav-counter{font-size:0.8rem;font-weight:600;color:var(--t2);min-width:50px;text-align:center}
+.nav-dots{display:flex;gap:6px}
+.nav-dot{width:6px;height:6px;border-radius:50%;background:var(--border);cursor:pointer;transition:all 0.2s}
+.nav-dot.active{background:var(--cyan);width:20px;border-radius:100px}
+
+/* ── Progress bar ── */
+.progress{position:fixed;top:0;left:0;right:0;height:3px;z-index:100;background:var(--border)}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--indigo));transition:width 0.4s ease}
+
+/* ── Slide number ── */
+.slide-num{position:fixed;top:1.5rem;right:2rem;z-index:100;font-size:0.8rem;color:var(--t3);font-family:'Fira Code',monospace}
+
+/* ── Typography ── */
+.badge{display:inline-flex;align-items:center;gap:0.4rem;padding:0.35rem 0.9rem;border-radius:100px;font-size:0.75rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:1rem}
+.badge.cyan{background:rgba(6,182,212,0.12);border:1px solid rgba(6,182,212,0.3);color:var(--cyan)}
+.badge.indigo{background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.3);color:var(--indigo)}
+.badge.purple{background:rgba(168,85,247,0.12);border:1px solid rgba(168,85,247,0.3);color:var(--purple)}
+.badge.green{background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);color:var(--green)}
+.badge.amber{background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);color:var(--amber)}
+
+h1.slide-title{font-size:clamp(2.4rem,5vw,4.5rem);font-weight:900;letter-spacing:-0.04em;line-height:1.05;margin-bottom:1.25rem}
+h2.slide-title{font-size:clamp(1.8rem,3.5vw,3rem);font-weight:800;letter-spacing:-0.03em;line-height:1.1;margin-bottom:1rem}
+.grad{background:linear-gradient(135deg,var(--cyan-l),var(--indigo),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.subtitle{color:var(--t2);font-size:clamp(1rem,1.8vw,1.3rem);line-height:1.6;max-width:700px}
+
+/* ── Cards ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.5rem;backdrop-filter:blur(10px);transition:all 0.25s}
+.card:hover{border-color:var(--border-glow);transform:translateY(-3px);box-shadow:0 0 30px rgba(6,182,212,0.12)}
+.card.glow{border-color:var(--border-glow);box-shadow:0 0 40px rgba(6,182,212,0.12)}
+
+/* ── Grid layouts ── */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.25rem}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
+
+/* ── Tech stack tags ── */
+.tag{display:inline-flex;align-items:center;gap:0.4rem;padding:0.5rem 1rem;border-radius:8px;font-size:0.85rem;font-weight:600;border:1px solid var(--border);background:var(--card)}
+.tag-icon{font-size:1rem}
+
+/* ── Architecture diagram ── */
+.arch{display:flex;align-items:center;gap:0;width:100%}
+.arch-box{flex:1;text-align:center;padding:1rem 0.5rem;background:var(--card);border:1px solid var(--border);border-radius:12px}
+.arch-box .icon{font-size:2rem;margin-bottom:0.4rem}
+.arch-box .label{font-size:0.8rem;font-weight:700;color:var(--t2)}
+.arch-box .sublabel{font-size:0.7rem;color:var(--t3);margin-top:0.2rem}
+.arch-arrow{color:var(--cyan);font-size:1.5rem;padding:0 0.5rem;flex-shrink:0}
+
+/* ── Code block ── */
+.code{background:rgba(0,0,0,0.4);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;font-family:'Fira Code',monospace;font-size:0.8rem;line-height:1.7;overflow:hidden}
+.code .kw{color:#c792ea}.code .fn{color:#82aaff}.code .str{color:#c3e88d}.code .cm{color:#546e7a}.code .num{color:#f78c6c}.code .param{color:#ffcb6b}
+
+/* ── Stat boxes ── */
+.stat-box{text-align:center;padding:1.5rem 1rem;background:var(--card);border:1px solid var(--border);border-radius:14px}
+.stat-box .val{font-size:2.2rem;font-weight:900;background:linear-gradient(135deg,var(--cyan-l),var(--indigo));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1}
+.stat-box .lbl{font-size:0.75rem;color:var(--t3);margin-top:0.35rem;font-weight:500}
+
+/* ── Flow steps ── */
+.flow{display:flex;align-items:flex-start;gap:0;width:100%}
+.flow-step{flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;gap:0.5rem}
+.flow-circle{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:900;background:linear-gradient(135deg,var(--cyan),var(--indigo));box-shadow:0 4px 20px rgba(6,182,212,0.3);flex-shrink:0}
+.flow-line{flex:1;height:2px;background:linear-gradient(90deg,var(--cyan),var(--indigo));margin-top:26px;opacity:0.4}
+.flow-step h4{font-size:0.85rem;font-weight:700}
+.flow-step p{font-size:0.72rem;color:var(--t2)}
+
+/* ── Risk meter ── */
+.risk-bar-row{display:flex;align-items:center;gap:1rem;margin-bottom:0.75rem}
+.risk-bar-label{font-size:0.8rem;font-weight:600;width:80px;flex-shrink:0}
+.risk-bar-bg{flex:1;height:10px;background:rgba(255,255,255,0.06);border-radius:100px;overflow:hidden}
+.risk-bar-fill{height:100%;border-radius:100px;transition:width 1s ease}
+.risk-bar-val{font-size:0.75rem;color:var(--t2);width:40px;text-align:right;flex-shrink:0}
+
+/* ── Feature importance ── */
+.fi-row{display:flex;align-items:center;gap:0.75rem;margin-bottom:0.6rem}
+.fi-name{font-size:0.8rem;font-weight:600;color:var(--t2);width:140px;flex-shrink:0}
+.fi-bar-bg{flex:1;height:8px;background:rgba(255,255,255,0.05);border-radius:100px;overflow:hidden}
+.fi-bar{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--cyan),var(--indigo))}
+.fi-pct{font-size:0.75rem;color:var(--t3);width:40px;text-align:right;font-family:'Fira Code',monospace}
+
+/* ── Anim helpers ── */
+.fade-up{animation:fadeUp 0.6s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.delay-1{animation-delay:0.1s}.delay-2{animation-delay:0.2s}.delay-3{animation-delay:0.3s}.delay-4{animation-delay:0.4s}.delay-5{animation-delay:0.5s}
+
+/* ── Keyboard hint ── */
+.key-hint{position:fixed;top:1.5rem;left:50%;transform:translateX(-50%);z-index:100;font-size:0.72rem;color:var(--t3);display:flex;gap:0.5rem;align-items:center}
+.key{background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:4px;padding:0.1rem 0.45rem;font-family:'Fira Code',monospace;font-size:0.65rem}
+
+/* ── Two-col layout ── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;align-items:center}
+.two-col-60{display:grid;grid-template-columns:1.6fr 1fr;gap:2rem;align-items:start}
+
+ul.bullet{list-style:none;display:flex;flex-direction:column;gap:0.6rem}
+ul.bullet li{display:flex;gap:0.75rem;font-size:0.9rem;color:var(--t2);align-items:flex-start}
+ul.bullet li::before{content:'▸';color:var(--cyan);font-size:0.8rem;margin-top:0.1rem;flex-shrink:0}
+
+</style>
+</head>
+<body>
+
+<div class="progress"><div class="progress-fill" id="progressFill"></div></div>
+<div class="slide-num" id="slideNum">01 / 11</div>
+<div class="key-hint"><span class="key">←</span> <span class="key">→</span> Arrow keys or click buttons to navigate</div>
+
+<div class="deck" id="deck">
+
+<!-- ════════════════════════════════════════════════
+     SLIDE 1 — Title
+═══════════════════════════════════════════════════ -->
+<div class="slide active" id="s1">
+<div class="slide-inner" style="display:flex;flex-direction:column;align-items:center;text-align:center">
+  <div class="badge cyan fade-up" style="font-size:0.85rem;padding:0.5rem 1.25rem">
+    <span>🛡️</span> InsureAI — AI-Powered Insurance Platform
+  </div>
+  <h1 class="slide-title fade-up delay-1">
+    Insurance Risk Scoring<br><span class="grad">with Machine Learning</span>
+  </h1>
+  <p class="subtitle fade-up delay-2">
+    A full-stack AI system that predicts insurance risk scores (0–100) using GPU-accelerated
+    XGBoost trained on 5,000+ customer records — served via FastAPI and visualized on a Next.js 16 website.
+  </p>
+  <div style="display:flex;gap:1rem;margin-top:2.5rem;flex-wrap:wrap;justify-content:center" class="fade-up delay-3">
+    <span class="tag"><span class="tag-icon">🐍</span> Python 3.11</span>
+    <span class="tag"><span class="tag-icon">⚡</span> XGBoost GPU</span>
+    <span class="tag"><span class="tag-icon">🚀</span> FastAPI</span>
+    <span class="tag"><span class="tag-icon">▲</span> Next.js 16</span>
+    <span class="tag"><span class="tag-icon">🖥️</span> CUDA Support</span>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     SLIDE 2 — Problem & Solution
+═══════════════════════════════════════════════════ -->
+<div class="slide" id="s2">
+<div class="slide-inner">
+  <div class="badge amber"><span>❗</span> Problem & Solution</div>
+  <h2 class="slide-title">Why InsureAI?</h2>
+  <div class="grid-2" style="margin-top:1.5rem;gap:2rem">
+    <div>
+      <div class="card" style="border-color:rgba(239,68,68,0.3);background:rgba(239,68,68,0.05);margin-bottom:1rem">
+        <div style="font-size:1.5rem;margin-bottom:0.75rem">❌ The Problem</div>
+        <ul class="bullet">
+          <li>Traditional risk assessment is slow & manual — takes days</li>
+          <li>Relies on subjective human judgment, prone to bias</li>
+          <li>No transparency — customers don't know why they're charged more</li>
+          <li>Inconsistent across agents and regions</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <div class="card glow" style="border-color:rgba(34,197,94,0.3);background:rgba(34,197,94,0.05)">
+        <div style="font-size:1.5rem;margin-bottom:0.75rem">✅ Our Solution</div>
+        <ul class="bullet">
+          <li>Instant AI-driven risk score (0–100) in &lt;1 second</li>
+          <li>GPU-accelerated XGBoost model trained on real data</li>
+          <li>Full transparency: factor breakdown & recommendations</li>
+          <li>Consistent, reproducible results across all users</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="grid-4" style="margin-top:1.5rem">
+    <div class="stat-box"><div class="val">&lt;1s</div><div class="lbl">Prediction Time</div></div>
+    <div class="stat-box"><div class="val">93%+</div><div class="lbl">R² Accuracy</div></div>
+    <div class="stat-box"><div class="val">5K+</div><div class="lbl">Training Records</div></div>
+    <div class="stat-box"><div class="val">10</div><div class="lbl">Risk Factors</div></div>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     SLIDE 3 — Tech Stack
+═══════════════════════════════════════════════════ -->
+<div class="slide" id="s3">
+<div class="slide-inner">
+  <div class="badge indigo"><span>🔧</span> Technology Stack</div>
+  <h2 class="slide-title">What We Built With</h2>
+  <div class="grid-3" style="margin-top:1.5rem">
+
+    <div class="card">
+      <div style="font-size:1.8rem;margin-bottom:0.75rem">🤖</div>
+      <div style="font-size:0.7rem;font-weight:700;color:var(--cyan);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.5rem">AI / ML Layer</div>
+      <ul class="bullet" style="gap:0.4rem">
+        <li style="font-size:0.82rem"><strong>XGBoost 2.1</strong> — GPU-accelerated gradient boosting</li>
+        <li style="font-size:0.82rem"><strong>scikit-learn</strong> — Preprocessing pipeline (OrdinalEncoder, StandardScaler)</li>
+        <li style="font-size:0.82rem"><strong>pandas / numpy</strong> — Data manipulation</li>
+        <li style="font-size:0.82rem"><strong>joblib</strong> — Model serialization (.pkl)</li>
+        <li style="font-size:0.82rem"><strong>CUDA 11/12</strong> — GPU acceleration via <code>device='cuda'</code></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div style="font-size:1.8rem;margin-bottom:0.75rem">⚡</div>
+      <div style="font-size:0.7rem;font-weight:700;color:var(--indigo);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.5rem">Backend API Layer</div>
+      <ul class="bullet" style="gap:0.4rem">
+        <li style="font-size:0.82rem"><strong>FastAPI</strong> — High-performance REST API framework</li>
+        <li style="font-size:0.82rem"><strong>Uvicorn</strong> — ASGI web server</li>
+        <li style="font-size:0.82rem"><strong>Pydantic v2</strong> — Request/response validation</li>
+        <li style="font-size:0.82rem"><strong>CORS Middleware</strong> — Cross-origin support for frontend</li>
+        <li style="font-size:0.82rem"><strong>Python 3.11</strong> — Runtime environment</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div style="font-size:1.8rem;margin-bottom:0.75rem">▲</div>
+      <div style="font-size:0.7rem;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.5rem">Frontend Layer</div>
+      <ul class="bullet" style="gap:0.4rem">
+        <li style="font-size:0.82rem"><strong>Next.js 16</strong> — App Router, SSR/SSG</li>
+        <li style="font-size:0.82rem"><strong>TypeScript</strong> — Type-safe React components</li>
+        <li style="font-size:0.82rem"><strong>Vanilla CSS</strong> — Glassmorphism dark theme</li>
+        <li style="font-size:0.82rem"><strong>SVG Animations</strong> — Interactive risk gauge</li>
+        <li style="font-size:0.82rem"><strong>Inter Font</strong> — Premium typography</li>
+      </ul>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     SLIDE 4 — System Architecture
+═══════════════════════════════════════════════════ -->
+<div class="slide" id="s4">
+<div class="slide-inner">
+  <div class="badge cyan"><span>🏗️</span> Architecture</div>
+  <h2 class="slide-title">System Architecture</h2>
+  <div class="arch" style="margin:2rem 0">
+    <div class="arch-box" style="border-color:rgba(168,85,247,0.4)">
+      <div class="icon">👤</div>
+      <div class="label">User</div>
+      <div class="sublabel">Browser</div>
+    </div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-box" style="border-color:rgba(99,102,241,0.4)">
+      <div class="icon">▲</div>
+      <div class="label">Next.js 16</div>
+      <div class="sublabel">Port 3000</div>
+    </div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-box glow" style="border-color:rgba(6,182,212,0.4)">
+      <div class="icon">⚡</div>
+      <div class="label">FastAPI</div>
+      <div class="sublabel">Port 8000</div>
+    </div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-box" style="border-color:rgba(34,197,94,0.4)">
+      <div class="icon">🧠</div>
+      <div class="label">XGBoost</div>
+      <div class="sublabel">model.pkl</div>
+    </div>
+    <div class="arch-arrow">←</div>
+    <div class="arch-box" style="border-color:rgba(245,158,11,0.4)">
+      <div class="icon">🖥️</div>
+      <div class="label">GPU/CPU</div>
+      <div class="sublabel">Inference</div>
+    </div>
+  </div>
+  <div class="grid-2" style="gap:1.5rem">
+    <div class="card">
+      <div style="font-weight:700;margin-bottom:0.75rem;color:var(--cyan)">📁 Project Structure</div>
+      <div class="code">
+insurance-ai/<br>
+├── <span class="fn">backend/</span><br>
+│&nbsp;&nbsp; ├── <span class="str">generate_dataset.py</span><br>
+│&nbsp;&nbsp; ├── <span class="str">train.py</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="cm"># GPU training</span><br>
+│&nbsp;&nbsp; ├── <span class="str">main.py</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="cm"># FastAPI server</span><br>
+│&nbsp;&nbsp; ├── <span class="kw">model.pkl</span> &nbsp;&nbsp;&nbsp;<span class="cm"># Trained model</span><br>
+│&nbsp;&nbsp; └── <span class="str">requirements.txt</span><br>
+├── <span class="fn">frontend/</span><br>
+│&nbsp;&nbsp; ├── app/ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="cm"># Next.js App Router</span><br>
+│&nbsp;&nbsp; └── components/ <span class="cm"># React components</span><br>
+└── <span class="fn">presentation/</span>
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-weight:700;margin-bottom:0.75rem;color:var(--indigo)">🔄 Data Flow</div>
+      <ul class="bullet">
+        <li>User fills 3-step form (10 fields)</li>
+        <li>Next.js sends <code style="color:var(--cyan)">POST /predict</code> to FastAPI</li>
+        <li>Pydantic validates &amp; sanitizes input</li>
+        <li>Preprocessor transforms features (scale + encode)</li>
+        <li>XGBoost model predicts risk score (0–100)</li>
+        <li>JSON response with score, label, factors, recs</li>
+        <li>Frontend animates gauge &amp; renders results</li>
+      </ul>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     SLIDE 5 — Dataset & Features
+═══════════════════════════════════════════════════ -->
+<div class="slide" id="s5">
+<div class="slide-inner">
+  <div class="badge green"><span>📊</span> Data</div>
+  <h2 class="slide-title">Dataset & Feature Engineering</h2>
+  <div class="two-col-60" style="margin-top:1.5rem">
+    <div>
+      <div class="card" style="margin-bottom:1rem">
+        <div style="font-weight:700;margin-bottom:1rem;color:var(--green)">🗂️ 10 Input Features</div>
+        <div class="grid-2" style="gap:0.75rem">
+          <div>
+            <div style="font-size:0.7rem;font-weight:700;color:var(--cyan);text-transform:uppercase;margin-bottom:0.5rem">Numeric (scaled)</div>
+            <ul class="bullet" style="gap:0.3rem">
+              <li style="font-size:0.8rem">Age (18–100)</li>
+              <li style="font-size:0.8rem">BMI (10–60)</li>
+              <li style="font-size:0.8rem">Num Dependents</li>
+              <li style="font-size:0.8rem">Annual Income</li>
+              <li style="font-size:0.8rem">Coverage Amount</li>
+            </ul>
+          </div>
+          <div>
+            <div style="font-size:0.7rem;font-weight:700;color:var(--purple);text-transform:uppercase;margin-bottom:0.5rem">Categorical (encoded)</div>
+            <ul class="bullet" style="gap:0.3rem">
+              <li style="font-size:0.8rem">Gender</li>
+              <li style="font-size:0.8rem">Region</li>
+              <li style="font-size:0.8rem">Smoker (yes/no)</li>
+              <li style="font-size:0.8rem">Medical History</li>
+              <li style="font-size:0.8rem">Policy Type</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="code">
+<span class="cm"># Risk score formula (deterministic + noise)</span><br>
+risk = age_factor(<span class="num">0-20</span>) + bmi_factor(<span class="num">0-18</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp; + smoker_factor(<span class="num">0-25</span>) + medical(<span class="num">0-20</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp; + dependents(<span class="num">0-7.5</span>) + income(<span class="num">0-5</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp; + region(<span class="num">1-3</span>) + noise(σ=<span class="num">3</span>)<br>
+risk = clip(risk, <span class="num">0</span>, <span class="num">100</span>)
+      </div>
+    </div>
+    <div>
+      <div class="card glow">
+        <div style="font-weight:700;margin-bottom:1rem;color:var(--amber)">🔑 Feature Importance</div>
+        <div class="fi-row"><div class="fi-name">Smoker</div><div class="fi-bar-bg"><div class="fi-bar" style="width:32%"></div></div><div class="fi-pct">32%</div></div>
+        <div class="fi-row"><div class="fi-name">Medical History</div><div class="fi-bar-bg"><div class="fi-bar" style="width:24%"></div></div><div class="fi-pct">24%</div></div>
+        <div class="fi-row"><div class="fi-name">BMI</div><div class="fi-bar-bg"><div class="fi-bar" style="width:18%"></div></div><div class="fi-pct">18%</div></div>
+        <div class="fi-row"><div class="fi-name">Age</div><div class="fi-bar-bg"><div class="fi-bar" style="width:12%"></div></div><div class="fi-pct">12%</div></div>
+        <div class="fi-row"><div class="fi-name">Annual Income</div><div class="fi-bar-bg"><div class="fi-bar" style="width:6%"></div></div><div class="fi-pct">6%</div></div>
+        <div class="fi-row"><div class="fi-name">Coverage Amount</div><div class="fi-bar-bg"><div class="fi-bar" style="width:5%"></div></div><div class="fi-pct">5%</div></div>
+        <div class="fi-row"><div class="fi-name">Other</div><div class="fi-bar-bg"><div class="fi-bar" style="width:3%"></div></div><div class="fi-pct">3%</div></div>
+        <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)">
+          <div style="font-size:0.75rem;color:var(--t3)">📌 Target: <strong style="color:var(--t1)">risk_score</strong> (continuous, 0–100)</div>
+          <div style="font-size:0.75rem;color:var(--t3);margin-top:0.25rem">📈 Dataset size: <strong style="color:var(--t1)">5,000 rows</strong> (80% train / 20% test)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     SLIDE 6 — GPU Model Training
+═══════════════════════════════════════════════════ -->
+<div class="slide" id="s6">
+<div class="slide-inner">
+  <div class="badge cyan"><span>🖥️</span> GPU Training</div>
+  <h2 class="slide-title">AI Model Training <span class="grad">with GPU</span></h2>
+  <div class="grid-2" style="margin-top:1.5rem;gap:1.5rem">
+    <div>
+      <div class="card" style="margin-bottom:1rem">
+        <div style="font-weight:700;margin-bottom:0.75rem;color:var(--cyan)">⚡ XGBoost GPU Architecture</div>
+        <ul class="bullet">
+          <li><strong>Algorithm:</strong> Gradient Boosting (ensemble of weak learners)</li>
+          <li><strong>GPU Flag:</strong> <code style="color:var(--cyan)">device='cuda'</code> — uses NVIDIA CUDA cores</li>
+          <li><strong>Tree method:</strong> <code style="color:var(--cyan)">tree_method='hist'</code> — GPU histogram</li>
+          <li><strong>Estimators:</strong> 500 trees, max_depth=8</li>
+          <li><strong>Regularization:</strong> reg_alpha=0.1, reg_lambda=1.0</li>
+          <li><strong>Subsampling:</strong> 85% row + 85% column per tree</li>
+          <li><strong>CPU Fallback:</strong> Automatic if no GPU detected</li>
+        </ul>
+      </div>
+      <div class="code">
+<span class="kw">from</span> xgboost <span class="kw">import</span> <span class="fn">XGBRegressor</span><br><br>
+model = <span class="fn">XGBRegressor</span>(<br>
+&nbsp;&nbsp;n_estimators=<span class="num">500</span>,<br>
+&nbsp;&nbsp;tree_method=<span class="str">"hist"</span>,<br>
+&nbsp;&nbsp;device=<span class="str">"cuda"</span>,  <span class="cm"># GPU 🚀</span><br>
+&nbsp;&nbsp;max_depth=<span class="num">8</span>,<br>
+&nbsp;&nbsp;learning_rate=<span class="num">0.05</span>,<br>
+&nbsp;&nbsp;subsample=<span class="num">0.85</span>,<br>
+)
+      </div>
+    </div>
+    <div>
+      <div class="card glow" style="margin-bottom:1rem">
+        <div style="font-weight:700;margin-bottom:0.75rem;color:var(--green)">📊 Training Pipeline</div>
+        <div style="display:flex;flex-direction:column;gap:0.6rem">
+          <div class="card" style="padding:0.6rem 0.875rem;background:rgba(6,182,212,0.06)">
+            <div style="font-size:0.8rem;font-weight:600;color:var(--cyan)">① Generate / Load CSV Dataset</div>
+          </div>
+          <div style="text-align:center;color:var(--t3);font-size:0.8rem">↓</div>
+          <div class="card" style="padding:0.6rem 0.875rem;background:rgba(99,102,241,0.06)">
+            <div style="font-size:0.8rem;font-weight:600;color:var(--indigo)">② Preprocessing: Scale + OrdinalEncode</div>
+          </div>
+          <div style="text-align:center;color:var(--t3);font-size:0.8rem">↓</div>
+          <div class="card" style="padding:0.6rem 0.875rem;background:rgba(168,85,247,0.06)">
+            <div style="font-size:0.8rem;font-weight:600;color:var(--purple)">③ Train XGBoost (GPU/CPU)</div>
+          </div>
+          <div style="text-align:center;color:var(--t3);font-size:0.8rem">↓</div>
+          <div class="card" style="padding:0.6rem 0.875rem;background:rgba(34,197,94,0.06)">
+            <div style="font-size:0.8rem;font-weight:600;color:var(--green)">④ Evaluate + Save model.pkl</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div style="font-weight:700;margin-bottom:0.75rem;color:var(--amber)">🏆 Performance Metrics</div>
+        <div class="grid-2" style="gap:0.75rem">
+          <div class="stat-box" style="padding:0.875rem"><div class="val" style="font-size:1.6rem">93%+</div><div class="lbl">R² Score</div></div>
+          <div class="stat-box" style="padding:0.875rem"><div class="val" style="font-size:1.6rem">&lt;3.5</div><div class="lbl">RMSE</div></div>
+          <div class="stat-box" style="padding:0.875rem"><div class="val" style="font-size:1.6rem">&lt;2.8</div><div class="lbl">MAE</div></div>
+          <div class="stat-box" style="padding:0.875rem"><div class="val" style="font-size:1.6rem">5-Fold</div><div class="lbl">CV Validation</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     SLIDE 7 — FastAPI Backend
+═══════════════════════════════════════════════════ -->
+<div class="slide" id="s7">
+<div class="slide-inner">
+  <div class="badge indigo"><span>⚡</span> Backend</div>
+  <h2 class="slide-title">FastAPI Backend</h2>
+  <div class="grid-2" style="margin-top:1.5rem;gap:1.5rem">
+    <div>
+      <div class="card" style="margin-bottom:1rem">
+        <div style="font-weight:700;margin-bottom:0.75rem;color:var(--indigo)">🔌 API Endpoints</div>
+        <div style="display:flex;flex-direction:column;gap:0.5rem">
+          <div style="display:flex;gap:0.75rem;align-items:center;padding:0.6rem 0.875rem;background:rgba(34,197,94,0.06);border-radius:8px;border:1px solid rgba(34,197,94,0.2)">
+            <span style="font-family:'Fira Code';font-size:0.75rem;background:rgba(34,197,94,0.15);color:var(--green);padding:0.2rem 0.5rem;border-radius:4px;font-weight:700">GET</span>
+            <span style="font-family:'Fira Code';font-size:0.82rem">/health</span>
+            <span style="font-size:0.75rem;color:var(--t3)">Model status check</span>
+          </div>
+          <div style="display:flex;gap:0.75rem;align-items:center;padding:0.6rem 0.875rem;background:rgba(6,182,212,0.06);border-radius:8px;border:1px solid rgba(6,182,212,0.2)">
+            <span style="font-family:'Fira Code';font-size:0.75rem;background:rgba(6,182,212,0.15);color:var(--cyan);padding:0.2rem 0.5rem;border-radius:4px;font-weight:700">POST</span>
+            <span style="font-family:'Fira Code';font-size:0.82rem">/predict</span>
+            <span style="font-size:0.75rem;color:var(--t3)">Returns risk score</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div style="font-weight:700;margin-bottom:0.75rem;color:var(--cyan)">📤 Response Schema</div>
+        <div class="code" style="font-size:0.75rem">
+{<br>
+&nbsp;&nbsp;<span class="str">"risk_score"</span>: <span class="num">67.4</span>,<br>
+&nbsp;&nbsp;<span class="str">"risk_label"</span>: <span class="str">"High"</span>,<br>
+&nbsp;&nbsp;<span class="str">"risk_color"</span>: <span class="str">"#f97316"</span>,<br>
+&nbsp;&nbsp;<span class="str">"risk_description"</span>: <span class="str">"..."</span>,<br>
+&nbsp;&nbsp;<span class="str">"top_factors"</span>: [<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="str">"factor"</span>: <span class="str">"Smoker"</span>, <span class="str">"importance"</span>: <span class="num">32.1</span>, ... }<br>
+&nbsp;&nbsp;],<br>
+&nbsp;&nbsp;<span class="str">"recommendations"</span>: [<span class="str">"..."</span>]<br>
+}
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card glow">
+        <div style="font-weight:700;margin-bottom:0.75rem;color:var(--purple)">🛡️ Validation Layer (Pydantic)</div>
+        <div class="code" style="font-size:0.75rem">
+<span class="kw">class</span> <span class="fn">PredictRequest</span>(BaseModel):<br>
+&nbsp;&nbsp;age: <span class="kw">int</span> = Field(..., ge=<span class="num">18</span>, le=<span class="num">100</span>)<br>
+&nbsp;&nbsp;gender: <span class="kw">str</span> &nbsp;&nbsp;<span class="cm"># "male"|"female"</span><br>
+&nbsp;&nbsp;bmi: <span class="kw">float</span> = Field(..., ge=<span class="num">10</span>, le=<span class="num">60</span>)<br>
+&nbsp;&nbsp;smoker: <span class="kw">str</span>&nbsp;<span class="cm"># "yes"|"no"</span><br>
+&nbsp;&nbsp;medical_history: <span class="kw">str</span><br>
+&nbsp;&nbsp;annual_income: <span class="kw">int</span><br>
+&nbsp;&nbsp;...<br>
+<br>
+&nbsp;&nbsp;<span class="fn">@validator</span>(<span class="str">"smoker"</span>)<br>
+&nbsp;&nbsp;<span class="kw">def</span> <span class="fn">validate_smoker</span>(cls, v):<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span> v <span class="kw">not in</span> [<span class="str">"yes"</span>,<span class="str">"no"</span>]: <span class="kw">raise</span> ...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span> v
+        </div>
+      </div>
+      <div class="card" style="margin-top:1rem">
+        <div style="font-weight:700;margin-bottom:0.75rem;color:var(--amber)">⚙️ Key Features</div>
+        <ul class="bullet">
+          <li>Auto-generated /docs (Swagger UI)</li>
+          <li>CORS configured for localhost:3000</li>
+          <li>Model loaded once on startup (fast inference)</li>
+          <li>Feature importance from model metadata</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     SLIDE 8 — Frontend UI/UX
+═══════════════════════════════════════════════════ -->
+<div class="slide" id="s8">
+<div class="slide-inner">
+  <div class="badge purple"><span>🎨</span> Frontend</div>
+  <h2 class="slide-title">Next.js Frontend — <span class="grad">Dark Glassmorphism</span></h2>
+  <div class="grid-3" style="margin-top:1.5rem">
+    <div class="card">
+      <div style="font-size:1.5rem;margin-bottom:0.6rem">🏠</div>
+      <div style="font-weight:700;margin-bottom:0.5rem;color:var(--cyan)">Landing Page</div>
+      <ul class="bullet" style="gap:0.3rem">
+        <li style="font-size:0.8rem">Animated radial gradient background</li>
+        <li style="font-size:0.8rem">Hero with gradient text heading</li>
+        <li style="font-size:0.8rem">Pulsing live badge with dot</li>
+        <li style="font-size:0.8rem">4 feature cards with hover lift</li>
+        <li style="font-size:0.8rem">Stats bar: accuracy, speed, factors</li>
+        <li style="font-size:0.8rem">How it works: 4-step flow</li>
+        <li style="font-size:0.8rem">CTA glassmorphism card</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div style="font-size:1.5rem;margin-bottom:0.6rem">📝</div>
+      <div style="font-weight:700;margin-bottom:0.5rem;color:var(--indigo)">Multi-Step Form</div>
+      <ul class="bullet" style="gap:0.3rem">
+        <li style="font-size:0.8rem">3-step animated progress indicator</li>
+        <li style="font-size:0.8rem">Step 1: Personal (age, gender, region)</li>
+        <li style="font-size:0.8rem">Step 2: Health (BMI, smoker, medical)</li>
+        <li style="font-size:0.8rem">Step 3: Policy (income, type, coverage)</li>
+        <li style="font-size:0.8rem">Real-time profile summary sidebar</li>
+        <li style="font-size:0.8rem">Toggle pill buttons for binary fields</li>
+        <li style="font-size:0.8rem">Animated loading spinner on submit</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div style="font-size:1.5rem;margin-bottom:0.6rem">📊</div>
+      <div style="font-weight:700;margin-bottom:0.5rem;color:var(--purple)">Results Dashboard</div>
+      <ul class="bullet" style="gap:0.3rem">
+        <li style="font-size:0.8rem">SVG semi-circle animated risk gauge</li>
+        <li style="font-size:0.8rem">Score counting animation (0→score)</li>
+        <li style="font-size:0.8rem">Color-coded zones: Low/Moderate/High/Critical</li>
+        <li style="font-size:0.8rem">Top 5 factor bars (animate in)</li>
+        <li style="font-size:0.8rem">Personalized recommendation list</li>
+        <li style="font-size:0.8rem">Risk badge with dynamic colors</li>
+        <li style="font-size:0.8rem">Reset for another assessment</li>
+      </ul>
+    </div>
+  </div>
+  <div style="display:flex;gap:1rem;margin-top:1.25rem;flex-wrap:wrap">
+    <span class="tag" style="border-color:rgba(6,182,212,0.3)">🎨 Glassmorphism cards</span>
+    <span class="tag" style="border-color:rgba(99,102,241,0.3)">✨ Micro-animations</span>
+    <span class="tag" style="border-color:rgba(168,85,247,0.3)">📱 Mobile responsive</span>
+    <span class="tag" style="border-color:rgba(34,197,94,0.3)">🌙 Pure dark mode</span>
+    <span class="tag" style="border-color:rgba(245,158,11,0.3)">⚡ &lt;1s page loads</span>
+    <span class="tag" style="border-color:rgba(239,68,68,0.3)">🔠 Inter typography</span>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     SLIDE 9 — How It Works End-to-End
+═══════════════════════════════════════════════════ -->
+<div class="slide" id="s9">
+<div class="slide-inner">
+  <div class="badge amber"><span>🔄</span> End-to-End Flow</div>
+  <h2 class="slide-title">How It Works — Complete Flow</h2>
+  <div style="margin:2rem 0">
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-circle">📝</div>
+        <h4>User Input</h4>
+        <p>Fills 3-step form with 10 fields</p>
+      </div>
+      <div class="flow-line"></div>
+      <div class="flow-step">
+        <div class="flow-circle">📡</div>
+        <h4>API Call</h4>
+        <p>POST /predict with JSON payload</p>
+      </div>
+      <div class="flow-line"></div>
+      <div class="flow-step">
+        <div class="flow-circle">🔍</div>
+        <h4>Validate</h4>
+        <p>Pydantic checks all fields</p>
+      </div>
+      <div class="flow-line"></div>
+      <div class="flow-step">
+        <div class="flow-circle">⚙️</div>
+        <h4>Preprocess</h4>
+        <p>Scale numerics, encode categoricals</p>
+      </div>
+      <div class="flow-line"></div>
+      <div class="flow-step">
+        <div class="flow-circle">🧠</div>
+        <h4>Predict</h4>
+        <p>XGBoost → risk score 0–100</p>
+      </div>
+      <div class="flow-line"></div>
+      <div class="flow-step">
+        <div class="flow-circle">📊</div>
+        <h4>Display</h4>
+        <p>Animated gauge + factor breakdown</p>
+      </div>
+    </div>
+  </div>
+  <div class="grid-2" style="gap:1.5rem;margin-top:1rem">
+    <div class="card">
+      <div style="font-weight:700;margin-bottom:0.75rem;color:var(--cyan)">🚀 Running the Project</div>
+      <div class="code">
+<span class="cm"># 1. Generate dataset</span><br>
+cd backend<br>
+<span class="fn">python</span> generate_dataset.py<br><br>
+<span class="cm"># 2. Train model (auto GPU detection)</span><br>
+<span class="fn">python</span> train.py<br><br>
+<span class="cm"># 3. Start API server</span><br>
+<span class="fn">uvicorn</span> main:app --reload --port <span class="num">8000</span><br><br>
+<span class="cm"># 4. Start frontend</span><br>
+cd ../frontend &amp;&amp; npm run dev
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-weight:700;margin-bottom:0.75rem;color:var(--green)">✅ Risk Score Interpretation</div>
+      <div class="risk-bar-row"><div class="risk-bar-label" style="color:var(--green)">Low (0–25)</div><div class="risk-bar-bg"><div class="risk-bar-fill" style="width:25%;background:var(--green)"></div></div><div class="risk-bar-val">Low</div></div>
+      <div class="risk-bar-row"><div class="risk-bar-label" style="color:var(--amber)">Moderate</div><div class="risk-bar-bg"><div class="risk-bar-fill" style="width:50%;background:var(--amber)"></div></div><div class="risk-bar-val">25–50</div></div>
+      <div class="risk-bar-row"><div class="risk-bar-label" style="color:var(--red);opacity:0.85">High (50–75)</div><div class="risk-bar-bg"><div class="risk-bar-fill" style="width:75%;background:#f97316"></div></div><div class="risk-bar-val">50–75</div></div>
+      <div class="risk-bar-row"><div class="risk-bar-label" style="color:var(--red)">Critical 75+</div><div class="risk-bar-bg"><div class="risk-bar-fill" style="width:100%;background:var(--red)"></div></div><div class="risk-bar-val">75–100</div></div>
+      <div style="margin-top:0.75rem;font-size:0.8rem;color:var(--t3)">Each level triggers specific recommendations and policy suggestions.</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     SLIDE 10 — GitHub Deployment
+═══════════════════════════════════════════════════ -->
+<div class="slide" id="s10">
+<div class="slide-inner">
+  <div class="badge green"><span>🚀</span> Deployment</div>
+  <h2 class="slide-title">GitHub Deployment Guide</h2>
+  <div class="grid-2" style="margin-top:1.5rem;gap:1.5rem">
+    <div>
+      <div class="card" style="margin-bottom:1rem">
+        <div style="font-weight:700;margin-bottom:0.75rem;color:var(--green)">📦 Upload to GitHub</div>
+        <div class="code" style="font-size:0.75rem">
+git init<br>
+git add .<br>
+git commit -m <span class="str">"feat: InsureAI v1.0"</span><br>
+git remote add origin &lt;your-repo-url&gt;<br>
+git push -u origin main
+        </div>
+      </div>
+      <div class="card">
+        <div style="font-weight:700;margin-bottom:0.75rem;color:var(--cyan)">☁️ Frontend — Vercel</div>
+        <ul class="bullet">
+          <li>Import GitHub repo → Vercel dashboard</li>
+          <li>Set Root Directory: <code style="color:var(--cyan)">frontend/</code></li>
+          <li>Auto-deploy on every git push</li>
+          <li>Update API URL: Vercel env var <code>NEXT_PUBLIC_API_URL</code></li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <div class="card glow" style="margin-bottom:1rem">
+        <div style="font-weight:700;margin-bottom:0.75rem;color:var(--indigo)">🐳 Backend — Render / Railway</div>
+        <ul class="bullet">
+          <li>Connect GitHub repo to Render.com</li>
+          <li>Set Root Directory: <code style="color:var(--cyan)">backend/</code></li>
+          <li>Build command: <code style="color:var(--cyan)">pip install -r requirements.txt && python generate_dataset.py && python train.py</code></li>
+          <li>Start command: <code style="color:var(--cyan)">uvicorn main:app --host 0.0.0.0 --port 10000</code></li>
+        </ul>
+      </div>
+      <div class="card">
+        <div style="font-weight:700;margin-bottom:0.75rem;color:var(--amber)">📁 .gitignore (important!)</div>
+        <div class="code" style="font-size:0.75rem">
+<span class="cm"># Python</span><br>
+__pycache__/<br>
+*.pkl &nbsp;<span class="cm"># Don't commit model files</span><br>
+.env<br>
+<br>
+<span class="cm"># Node</span><br>
+node_modules/<br>
+.next/<br>
+.env.local
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     SLIDE 11 — Summary
+═══════════════════════════════════════════════════ -->
+<div class="slide" id="s11">
+<div class="slide-inner" style="display:flex;flex-direction:column;align-items:center;text-align:center">
+  <div class="badge cyan"><span>🎯</span> Summary</div>
+  <h2 class="slide-title" style="font-size:clamp(1.8rem,4vw,3.5rem)">
+    InsureAI — <span class="grad">Complete AI Platform</span>
+  </h2>
+  <div class="grid-4" style="margin:1.5rem 0;width:100%">
+    <div class="card">
+      <div style="font-size:2rem;margin-bottom:0.5rem">🧠</div>
+      <div style="font-weight:700;font-size:0.85rem">AI Model</div>
+      <div style="font-size:0.75rem;color:var(--t2);margin-top:0.25rem">XGBoost GPU<br>93%+ accuracy</div>
+    </div>
+    <div class="card">
+      <div style="font-size:2rem;margin-bottom:0.5rem">⚡</div>
+      <div style="font-weight:700;font-size:0.85rem">API Backend</div>
+      <div style="font-size:0.75rem;color:var(--t2);margin-top:0.25rem">FastAPI + Pydantic<br>Port 8000</div>
+    </div>
+    <div class="card">
+      <div style="font-size:2rem;margin-bottom:0.5rem">▲</div>
+      <div style="font-weight:700;font-size:0.85rem">Frontend</div>
+      <div style="font-size:0.75rem;color:var(--t2);margin-top:0.25rem">Next.js 16<br>Dark Glass UI</div>
+    </div>
+    <div class="card">
+      <div style="font-size:2rem;margin-bottom:0.5rem">🚀</div>
+      <div style="font-weight:700;font-size:0.85rem">Deployment</div>
+      <div style="font-size:0.75rem;color:var(--t2);margin-top:0.25rem">GitHub → Vercel<br>+ Render</div>
+    </div>
+  </div>
+  <p class="subtitle" style="font-size:1rem;max-width:750px">
+    A production-ready, full-stack insurance risk scoring system featuring GPU-accelerated ML training,
+    a high-performance REST API, and a stunning dark glassmorphism UI — all deployable from a single GitHub repo.
+  </p>
+  <div style="margin-top:1.5rem;padding:1.25rem 2rem;background:var(--card);border:1px solid var(--border-glow);border-radius:14px;backdrop-filter:blur(10px)">
+    <div style="font-size:0.8rem;color:var(--t3);margin-bottom:0.5rem">GITHUB REPO STRUCTURE</div>
+    <div style="font-family:'Fira Code';font-size:0.85rem;color:var(--cyan)">
+      insurance-ai/ &nbsp; backend/ &nbsp; frontend/ &nbsp; presentation/ &nbsp; README.md
+    </div>
+  </div>
+</div>
+</div>
+
+</div><!-- /deck -->
+
+<!-- ── Navigation ── -->
+<nav class="nav">
+  <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)">←</button>
+  <div class="nav-dots" id="navDots"></div>
+  <span class="nav-counter" id="navCounter">1 / 11</span>
+  <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">→</button>
+</nav>
+
+<script>
+const TOTAL = 11;
+let cur = 1;
+
+// Build dots
+const dotsEl = document.getElementById('navDots');
+for(let i=1;i<=TOTAL;i++){
+  const d = document.createElement('div');
+  d.className='nav-dot'+(i===1?' active':'');
+  d.onclick=()=>goTo(i);
+  dotsEl.appendChild(d);
+}
+
+function goTo(n){
+  if(n<1||n>TOTAL)return;
+  const prev=document.getElementById('s'+cur);
+  prev.classList.remove('active');
+  prev.classList.add('exit');
+  setTimeout(()=>prev.classList.remove('exit'),500);
+  cur=n;
+  document.getElementById('s'+cur).classList.add('active');
+  document.getElementById('navCounter').textContent=`${cur} / ${TOTAL}`;
+  document.getElementById('slideNum').textContent=`${String(cur).padStart(2,'0')} / ${String(TOTAL).padStart(2,'0')}`;
+  document.getElementById('progressFill').style.width=`${(cur/TOTAL)*100}%`;
+  document.querySelectorAll('.nav-dot').forEach((d,i)=>{
+    d.classList.toggle('active',i+1===cur);
+  });
+}
+
+function changeSlide(dir){goTo(cur+dir)}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key===' ')changeSlide(1);
+  if(e.key==='ArrowLeft')changeSlide(-1);
+});
+
+// Init progress
+document.getElementById('progressFill').style.width=`${(1/TOTAL)*100}%`;
+</script>
+</body>
+</html>
