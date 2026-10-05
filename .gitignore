@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+.Python
+env/
+venv/
+.venv/
+*.egg-info/
+dist/
+build/
+
+# Model & dataset artifacts (generated via scripts)
+backend/model.pkl
+backend/model_metadata.pkl
+backend/model_booster.json
+backend/data/insurance_data.csv
+*.pkl
+
+# Secrets, Environment & Local Configuration
+.env
+.env.*
+*.env
+*.env.*
+*.local
+
+# Local Workspace, IDE & Deployment tool caches
+.agents/
+.netlify/
+.vscode/
+.idea/
+*CLAUDE.md
+*AGENTS.md
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+frontend/out/
+npm-debug.log*
+yarn-error.log*
+
+# OS specific files
+.DS_Store
+Thumbs.db
+*.swp
+
+# Logs
+*.log
